@@ -1,35 +1,24 @@
 #!/usr/bin/env python3
 
-import biblib.bib
-import argparse
-import sys
-import requests
-import urllib.parse
+import biblib.bib, requests
+import sys, re, urllib.parse, collections
 from pprint import pprint
-import re
 
 def main():
-    arg_parser = argparse.ArgumentParser(
-        description='Flatten macros, combine, and pretty-print .bib database(s)')
-    arg_parser.add_argument('bib', nargs='+', help='.bib file(s) to process',
-                            type=open)
-    arg_parser.add_argument('--min-crossrefs', type=int,
-                            help='minimum number of cross-referencing entries'
-                            ' required to expand a crossref; if omitted, no'
-                            ' expansion occurs', default=None)
-    args = arg_parser.parse_args()
+    with open(sys.argv[1]) as f:
+      raw = biblib.bib.Parser().parse(f, log_fp=sys.stderr).get_entries()
 
-    try:
-        # Load databases
-        db = biblib.bib.Parser().parse(args.bib, log_fp=sys.stderr).get_entries()
+    db = collections.OrderedDict()
+    for i in raw:
+      key = i.key.lower()
+      if key in db:
+        if db[key] != i:
+          print("duplicate entry ", i.pos, key, i)
+      db[ i.key.lower() ] = i
 
-        # Optionally resolve cross-references
-        if args.min_crossrefs is not None:
-            db = biblib.bib.resolve_crossrefs(
-                db, min_crossrefs=args.min_crossrefs)
-
-    except biblib.messages.InputError:
-        sys.exit(1)
+#    for i in db.values():
+#      print(i.to_bib(wrap_width=120))
+#      print()
 
     # Pretty-print entries
     queries = []
@@ -58,7 +47,7 @@ def main():
                 respbib = biblib.bib.Parser().parse(resp, log_fp=sys.stderr).get_entries()
                 if len(respbib) == 1:
                     print("% OK ", oquery)
-                    bibl = respbib[list(respbib)[0]]
+                    bibl = respbib[0]
                     bibl.key = ent.key
                     print(bibl.to_bib(wrap_width=120))
                     continue
