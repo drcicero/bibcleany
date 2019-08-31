@@ -333,8 +333,8 @@ class Entry(collections.OrderedDict):
         super().__init__(fields)
         self.typ, self.key, self.pos, self.field_pos = typ, key, pos, field_pos
 
-    def copy(self):
-        return self.__class__(self, self.typ, self.key, self.pos, self.field_pos)
+    def copy(self, fields=None, typ=None, key=None, pos=None, field_pos=None):
+        return Entry(fields or self.fields, typ or self.typ, key or self.key, pos or self.pos, field_pos or self.field_pos)
 
     def __str__(self):
         return '`{}\' at {}'.format(self.key, self.pos)
