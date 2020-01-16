@@ -102,6 +102,8 @@ def main():
         if ent.key not in succkeys:
           f.write(ent.to_bib(wrap_width=120) + "\n\n")
 
+    print("done")
+
 #        resp = requests.get("https://dblp.org/search/publ/api?json=bib&q=" + query).text
 #        if resp and "hit" in resp["result"]["hits"]:
 #            for hit in resp["result"]["hits"]["hit"]:
